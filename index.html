@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESD- und Drehmoment Prüfprotokoll</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-3 md:mb-0">
+                <i class="fa-solid fa-clipboard-check text-2xl"></i>
+                <h1 class="text-xl font-bold">ESD- und Drehmoment Prüfprotokoll</h1>
+            </div>
+            <nav class="flex space-x-2">
+                <button onclick="switchTab('employee')" id="btn-employee" class="px-4 py-2 rounded-lg bg-indigo-800 text-white font-medium transition hover:bg-indigo-600">
+                    <i class="fa-solid fa-user-check mr-2"></i>Mitarbeiter-Portal
+                </button>
+                <button onclick="switchTab('admin')" id="btn-admin" class="px-4 py-2 rounded-lg bg-indigo-900/50 text-indigo-100 font-medium transition hover:bg-indigo-600">
+                    <i class="fa-solid fa-lock mr-2"></i>Admin-Bereich
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- EMPLOYEE SECTION -->
+        <section id="tab-employee" class="max-w-3xl mx-auto space-y-6">
+            <!-- ESD Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Prüfung erfassen</h2>
+                    <p class="text-gray-600 text-sm mt-3 leading-relaxed text-justify bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        Der ESD-Test für Gelenkbandprüfung und Schuhwerkprüfung ist täglich zu absolvieren. Das Bestehen der beiden Tests ist mit einem Haken im farbig hinterlegten Feld zu bestätigen. Jeder Drehmomentschlüssel muss vor jedem Auftrag am jeweiligen Drehmomentprüfgerät geprüft werden, sodass sichergestellt wird, dass in der Montage stets das korrekte Drehmoment verwendet wird. Welches Drehmoment einstellt und geprüft werden muss, ist der jeweiligen Montageanleitung zu entnehmen. Die erfolgreiche Prüfung des Drehmomentschlüssels ist dann mit einem weiteren Häkchen in der Tabelle zu bestätigen.
+                    </p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ihr Name:</label>
+                        <select id="emp-select" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-6 text-center">
+                        <div id="current-time" class="text-3xl font-mono font-bold text-indigo-700 mb-2">00:00:00</div>
+                        <div id="current-date" class="text-gray-600 font-medium mb-6">Datum</div>
+
+                        <!-- Checkboxes for ESD and Drehmoment -->
+                        <div class="flex justify-center items-center space-x-8 mb-6">
+                            <label class="flex items-center space-x-2 cursor-pointer text-lg font-semibold text-gray-700">
+                                <input type="checkbox" id="checkbox-esd" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                                <span>ESD</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer text-lg font-semibold text-gray-700">
+                                <input type="checkbox" id="checkbox-drehmoment" class="w-5 h-5 text-amber-500 rounded focus:ring-amber-500">
+                                <span>Drehmoment</span>
+                            </label>
+                        </div>
+
+                        <!-- Send Button -->
+                        <button onclick="handleSend()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Senden</span>
+                        </button>
+                    </div>
+
+                    <!-- Today's status for selected employee -->
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold text-gray-700 mb-2">Heutiger Status:</h3>
+                        <div id="emp-today-status" class="bg-gray-50 p-4 rounded-lg text-sm text-gray-600">
+                            Noch keine Aktivität heute erfasst.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Vacation / Holiday Request Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fa-solid fa-calendar-days text-indigo-600 mr-2"></i>Urlaub / Abwesenheit beantragen</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Von Datum:</label>
+                        <input type="date" id="emp-holiday-start" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Bis Datum:</label>
+                        <input type="date" id="emp-holiday-end" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+                <button onclick="employeeAddHoliday()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition">Abwesenheit eintragen</button>
+            </div>
+        </section>
+
+        <!-- ADMIN SECTION -->
+        <section id="tab-admin" class="hidden max-w-6xl mx-auto space-y-8">
+            
+            <!-- Admin Login Box -->
+            <div id="admin-login-box" class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center"><i class="fa-solid fa-lock text-indigo-600 mr-2"></i>Admin-Anmeldung</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Passwort:</label>
+                        <input type="password" id="admin-password-input" placeholder="Passwort eingeben..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <button onclick="checkAdminLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition">Anmelden</button>
+                </div>
+            </div>
+
+            <!-- Admin Content (Hidden until login) -->
+            <div id="admin-content" class="hidden space-y-8">
+                
+                <!-- Admin Header & Password Change Option -->
+                <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <span class="font-bold text-gray-700"><i class="fa-solid fa-shield-halved text-indigo-600 mr-2"></i>Systemverwaltung</span>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="password" id="new-admin-password" placeholder="Neues Passwort..." class="p-2 border border-gray-300 rounded-lg text-sm">
+                        <button onclick="changeAdminPassword()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">Passwort ändern</button>
+                        <button onclick="adminLogout()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">Abmelden</button>
+                    </div>
+                </div>
+
+                <!-- Admin Tabs Navigation -->
+                <div class="flex border-b border-gray-300 space-x-4 bg-white px-4 rounded-t-xl shadow-sm overflow-x-auto">
+                    <button onclick="switchAdminSub('employees')" id="sub-btn-employees" class="py-3 px-4 font-semibold text-indigo-600 border-b-2 border-indigo-600 whitespace-nowrap">Mitarbeiter verwalten</button>
+                    <button onclick="switchAdminSub('holidays')" id="sub-btn-holidays" class="py-3 px-4 font-semibold text-gray-500 hover:text-indigo-600 whitespace-nowrap">Urlaub & Feiertage</button>
+                    <button onclick="switchAdminSub('reports')" id="sub-btn-reports" class="py-3 px-4 font-semibold text-gray-500 hover:text-indigo-600 whitespace-nowrap">Prüfprotokolle</button>
+                    <button onclick="switchAdminSub('calendar')" id="sub-btn-calendar" class="py-3 px-4 font-semibold text-gray-500 hover:text-indigo-600 whitespace-nowrap">Kalender-Übersicht</button>
+                </div>
+
+                <!-- 1. Employees Management -->
+                <div id="admin-sub-employees" class="bg-white rounded-b-xl rounded-tr-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Mitarbeiter hinzufügen</h3>
+                    <div class="flex gap-3 mb-6">
+                        <input type="text" id="new-emp-name" placeholder="Vollständiger Name..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <button onclick="addEmployee()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-lg transition">Hinzufügen</button>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Mitarbeiterliste</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3">Name</th>
+                                    <th class="p-3 text-right">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-table-body" class="divide-y divide-gray-200">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Holidays & Closures Management -->
+                <div id="admin-sub-holidays" class="hidden bg-white rounded-b-xl rounded-tr-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Alle eingetragenen Urlaube & Feiertage</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3">Mitarbeiter</th>
+                                    <th class="p-3">Von</th>
+                                    <th class="p-3">Bis</th>
+                                    <th class="p-3 text-right">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holiday-table-body" class="divide-y divide-gray-200">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. Reports & Attendance Logs -->
+                <div id="admin-sub-reports" class="hidden bg-white rounded-b-xl rounded-tr-xl shadow-lg p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-gray-800">Prüfprotokoll</h3>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="exportLogsCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-1">
+                                <i class="fa-solid fa-file-export mr-1"></i> Als CSV exportieren
+                            </button>
+                            <button onclick="clearLogs()" class="text-red-600 hover:text-red-800 text-sm font-semibold"><i class="fa-solid fa-trash mr-1"></i> Protokoll zurücksetzen</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 text-sm">
+                                    <th class="p-3">Datum</th>
+                                    <th class="p-3">Mitarbeiter</th>
+                                    <th class="p-3">Aktion</th>
+                                    <th class="p-3">Uhrzeit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body" class="divide-y divide-gray-200">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Calendar Overview -->
+                <div id="admin-sub-calendar" class="hidden bg-white rounded-b-xl rounded-tr-xl shadow-lg p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <h3 class="text-xl font-bold text-gray-800">Monats- und Prüfungsübersicht</h3>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="changeMonth(-1)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg transition">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <span id="calendar-month-year" class="font-bold text-lg min-w-[160px] text-center">Monat Jahr</span>
+                                <button onclick="changeMonth(1)" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg transition">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <button onclick="exportCalendarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-1">
+                                <i class="fa-solid fa-file-export mr-1"></i> Als CSV exportieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="flex flex-wrap items-center gap-4 mb-4 text-sm font-medium text-gray-600 bg-gray-50 p-3 rounded-lg border">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-4 h-4 bg-emerald-500 rounded inline-block"></span>
+                            <span>E = ESD geprüft</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-4 h-4 bg-amber-400 rounded inline-block"></span>
+                            <span>D = Drehmoment geprüft</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-4 h-4 bg-rose-500 rounded inline-block"></span>
+                            <span>N = Nicht im Haus (Urlaub)</span>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid Table -->
+                    <div class="overflow-x-auto border rounded-xl">
+                        <table class="w-full text-center border-collapse">
+                            <thead>
+                                <tr id="calendar-header-row" class="bg-gray-100 text-gray-700 text-xs md:text-sm border-b">
+                                    <!-- Populated via JS -->
+                                </tr>
+                            </thead>
+                            <tbody id="calendar-body" class="divide-y divide-gray-200 text-xs md:text-sm">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // LocalStorage Data Initialization
+        let employees = JSON.parse(localStorage.getItem('gem_employees')) || ['Max Mustermann', 'Anna Schmidt'];
+        let holidays = JSON.parse(localStorage.getItem('gem_holidays')) || [];
+        let logs = JSON.parse(localStorage.getItem('gem_logs')) || [];
+
+        // Admin Password Initialization (Default: 1234)
+        if (!localStorage.getItem('gem_admin_pass')) {
+            localStorage.setItem('gem_admin_pass', '1234');
+        }
+
+        // Calendar state
+        let currentCalendarDate = new Date();
+
+        // Real-time Clock
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('current-time').innerText = now.toLocaleTimeString('de-DE');
+            document.getElementById('current-date').innerText = now.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
+
+        // Tab Switching (Employee / Admin)
+        function switchTab(tab) {
+            if (tab === 'employee') {
+                document.getElementById('tab-employee').classList.remove('hidden');
+                document.getElementById('tab-admin').classList.add('hidden');
+                document.getElementById('btn-employee').className = "px-4 py-2 rounded-lg bg-indigo-800 text-white font-medium transition hover:bg-indigo-600";
+                document.getElementById('btn-admin').className = "px-4 py-2 rounded-lg bg-indigo-900/50 text-indigo-100 font-medium transition hover:bg-indigo-600";
+            } else {
+                document.getElementById('tab-employee').classList.add('hidden');
+                document.getElementById('tab-admin').classList.remove('hidden');
+                document.getElementById('btn-admin').className = "px-4 py-2 rounded-lg bg-indigo-800 text-white font-medium transition hover:bg-indigo-600";
+                document.getElementById('btn-employee').className = "px-4 py-2 rounded-lg bg-indigo-900/50 text-indigo-100 font-medium transition hover:bg-indigo-600";
+                
+                // Reset to login view when switching to admin tab
+                document.getElementById('admin-login-box').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('hidden');
+                document.getElementById('admin-password-input').value = '';
+            }
+        }
+
+        // Admin Login Check
+        function checkAdminLogin() {
+            const enteredPass = document.getElementById('admin-password-input').value;
+            const storedPass = localStorage.getItem('gem_admin_pass');
+
+            if (enteredPass === storedPass) {
+                document.getElementById('admin-login-box').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                document.getElementById('admin-password-input').value = '';
+                renderAdminData();
+            } else {
+                alert('Falsches Passwort!');
+            }
+        }
+
+        // Admin Logout
+        function adminLogout() {
+            document.getElementById('admin-content').classList.add('hidden');
+            document.getElementById('admin-login-box').classList.remove('hidden');
+        }
+
+        // Change Admin Password
+        function changeAdminPassword() {
+            const newPass = document.getElementById('new-admin-password').value.trim();
+            if (!newPass) {
+                alert('Bitte geben Sie ein neues Passwort ein.');
+                return;
+            }
+
+            localStorage.setItem('gem_admin_pass', newPass);
+            document.getElementById('new-admin-password').value = '';
+            alert('Das Admin-Passwort wurde erfolgreich geändert.');
+        }
+
+        // Admin Sub-tabs
+        function switchAdminSub(sub) {
+            ['employees', 'holidays', 'reports', 'calendar'].forEach(s => {
+                document.getElementById(`admin-sub-${s}`).classList.add('hidden');
+                document.getElementById(`sub-btn-${s}`).className = "py-3 px-4 font-semibold text-gray-500 hover:text-indigo-600";
+            });
+            document.getElementById(`admin-sub-${sub}`).classList.remove('hidden');
+            document.getElementById(`sub-btn-${sub}`).className = "py-3 px-4 font-semibold text-indigo-600 border-b-2 border-indigo-600";
+            
+            if (sub === 'calendar') {
+                renderCalendar();
+            }
+        }
+
+        // Initialize Employee Dropdown
+        function updateEmployeeSelect() {
+            const select = document.getElementById('emp-select');
+            select.innerHTML = '';
+            if (employees.length === 0) {
+                select.innerHTML = '<option value="">Keine Mitarbeiter vorhanden</option>';
+                return;
+            }
+            employees.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp;
+                opt.textContent = emp;
+                select.appendChild(opt);
+            });
+            updateTodayStatus();
+        }
+
+        document.getElementById('emp-select').addEventListener('change', updateTodayStatus);
+
+        // Send Button Action
+        function handleSend() {
+            const name = document.getElementById('emp-select').value;
+            if (!name) return alert('Bitte wählen Sie einen Mitarbeiter aus.');
+
+            const cbEsd = document.getElementById('checkbox-esd').checked;
+            const cbDrehmoment = document.getElementById('checkbox-drehmoment').checked;
+
+            if (!cbEsd && !cbDrehmoment) {
+                return alert('Bitte wählen Sie mindestens eine Option (ESD oder Drehmoment) aus.');
+            }
+
+            let selectedActions = [];
+            if (cbEsd) selectedActions.push('ESD');
+            if (cbDrehmoment) selectedActions.push('Drehmoment');
+            let actionType = selectedActions.join(' & ');
+            
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toLocaleTimeString('de-DE');
+
+            logs.unshift({ date: dateStr, name: name, action: actionType, time: timeStr });
+            
+            document.getElementById('checkbox-esd').checked = false;
+            document.getElementById('checkbox-drehmoment').checked = false;
+
+            saveAndRefresh();
+            alert(`${name}, Ihre Prüfung (${actionType}) wurde um ${timeStr} erfolgreich erfasst.`);
+        }
+
+        // Employee Holiday Request
+        function employeeAddHoliday() {
+            const name = document.getElementById('emp-select').value;
+            if (!name) return alert('Bitte wählen Sie zuerst Ihren Namen aus.');
+
+            const start = document.getElementById('emp-holiday-start').value;
+            const end = document.getElementById('emp-holiday-end').value;
+
+            if (!start || !end) return alert('Bitte beide Datumsfelder für den Urlaubszeitraum ausfüllen.');
+            if (start > end) return alert('Das Startdatum kann nicht nach dem Enddatum liegen.');
+
+            holidays.push({ employee: name, start, end });
+            document.getElementById('emp-holiday-start').value = '';
+            document.getElementById('emp-holiday-end').value = '';
+            saveAndRefresh();
+            alert(`${name}, Ihr Abwesenheitsantrag wurde erfolgreich gespeichert.`);
+        }
+
+        // Update Today Status for selected employee
+        function updateTodayStatus() {
+            const name = document.getElementById('emp-select').value;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const statusDiv = document.getElementById('emp-today-status');
+
+            const empLogs = logs.filter(l => l.name === name && l.date === todayStr);
+            if (empLogs.length === 0) {
+                statusDiv.innerHTML = 'Noch keine Aktivität heute erfasst.';
+                return;
+            }
+
+            let html = '<ul class="space-y-1">';
+            empLogs.slice().reverse().forEach(l => {
+                html += `<li><span class="font-semibold">${l.time}</span> - ${l.action}</li>`;
+            });
+            html += '</ul>';
+            statusDiv.innerHTML = html;
+        }
+
+        // Employee Management
+        function addEmployee() {
+            const input = document.getElementById('new-emp-name');
+            const name = input.value.trim();
+            if (!name) return alert('Bitte geben Sie einen Namen ein.');
+            if (employees.includes(name)) return alert('Dieser Mitarbeiter existiert bereits.');
+
+            employees.push(name);
+            input.value = '';
+            saveAndRefresh();
+        }
+
+        function deleteEmployee(name) {
+            if (confirm(`Möchten Sie ${name} wirklich löschen?`)) {
+                employees = employees.filter(e => e !== name);
+                saveAndRefresh();
+            }
+        }
+
+        function deleteHoliday(index) {
+            holidays.splice(index, 1);
+            saveAndRefresh();
+        }
+
+        function clearLogs() {
+            if (confirm('Möchten Sie wirklich alle Protokolle zurücksetzen?')) {
+                logs = [];
+                saveAndRefresh();
+            }
+        }
+
+        // Save to LocalStorage and Refresh UI
+        function saveAndRefresh() {
+            localStorage.setItem('gem_employees', JSON.stringify(employees));
+            localStorage.setItem('gem_holidays', JSON.stringify(holidays));
+            localStorage.setItem('gem_logs', JSON.stringify(logs));
+            updateEmployeeSelect();
+            renderAdminData();
+            if(!document.getElementById('admin-sub-calendar').classList.contains('hidden')) {
+                renderCalendar();
+            }
+        }
+
+        // Render Admin Tables
+        function renderAdminData() {
+            const empTbody = document.getElementById('employee-table-body');
+            empTbody.innerHTML = '';
+            employees.forEach(emp => {
+                empTbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 font-medium">${emp}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteEmployee('${emp}')" class="text-red-600 hover:text-red-800 text-sm font-semibold"><i class="fa-solid fa-trash"></i> Löschen</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const holTbody = document.getElementById('holiday-table-body');
+            holTbody.innerHTML = '';
+            if (holidays.length === 0) {
+                holTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Keine Urlaube eingetragen.</td></tr>`;
+            } else {
+                holidays.forEach((h, idx) => {
+                    holTbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-medium">${h.employee || 'Allgemein'}</td>
+                            <td class="p-3">${h.start}</td>
+                            <td class="p-3">${h.end}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="deleteHoliday(${idx})" class="text-red-600 hover:text-red-800 text-sm font-semibold"><i class="fa-solid fa-trash"></i> Löschen</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const logsTbody = document.getElementById('logs-table-body');
+            logsTbody.innerHTML = '';
+            if (logs.length === 0) {
+                logsTbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Keine Protokolle vorhanden.</td></tr>`;
+                return;
+            }
+            logs.forEach(l => {
+                logsTbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 text-sm">
+                        <td class="p-3">${l.date}</td>
+                        <td class="p-3 font-medium">${l.name}</td>
+                        <td class="p-3">${l.action}</td>
+                        <td class="p-3 font-mono">${l.time}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Calendar Navigation & Rendering
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            document.getElementById('calendar-month-year').innerText = `${monthNames[month]} ${year}`;
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let headerHtml = `<th class="p-2 border-r bg-gray-200 text-left sticky left-0 z-10">Mitarbeiter</th>`;
+            for (let d = 1; d <= daysInMonth; d++) {
+                headerHtml += `<th class="p-1 border-r min-w-[32px]">${d}</th>`;
+            }
+            document.getElementById('calendar-header-row').innerHTML = headerHtml;
+
+            const tbody = document.getElementById('calendar-body');
+            tbody.innerHTML = '';
+
+            if (employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${daysInMonth + 1}" class="p-4 text-center text-gray-500">Keine Mitarbeiter vorhanden.</td></tr>`;
+                return;
+            }
+
+            employees.forEach(emp => {
+                let rowHtml = `<tr class="hover:bg-gray-50"><td class="p-2 border-r font-medium text-left bg-white sticky left-0 z-10">${emp}</td>`;
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dayStr = String(d).padStart(2, '0');
+                    const monthStr = String(month + 1).padStart(2, '0');
+                    const dateString = `${year}-${monthStr}-${dayStr}`;
+
+                    const currentDateObj = new Date(year, month, d);
+                    const dayOfWeek = currentDateObj.getDay();
+                    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+                    const isHoliday = holidays.some(h => h.employee === emp && dateString >= h.start && dateString <= h.end);
+                    const dayLogs = logs.filter(l => l.name === emp && l.date === dateString);
+
+                    let hasEsd = false;
+                    let hasDrehmoment = false;
+
+                    dayLogs.forEach(l => {
+                        if (l.action.includes('ESD')) hasEsd = true;
+                        if (l.action.includes('Drehmoment')) hasDrehmoment = true;
+                    });
+
+                    let cellContent = '';
+                    let cellBg = '';
+
+                    if (isWeekend) {
+                        cellBg = 'bg-gray-50';
+                    } else if (isHoliday) {
+                        cellContent = `<span class="text-white font-bold" title="Nicht im Haus (Urlaub)">N</span>`;
+                        cellBg = 'bg-rose-500';
+                    } else if (hasEsd && hasDrehmoment) {
+                        cellContent = `<span class="text-white font-bold text-xs" title="E & D geprüft">E+D</span>`;
+                        cellBg = 'bg-gradient-to-r from-emerald-500 to-amber-400';
+                    } else if (hasEsd) {
+                        cellContent = `<span class="text-white font-bold" title="ESD geprüft (E)">E</span>`;
+                        cellBg = 'bg-emerald-500';
+                    } else if (hasDrehmoment) {
+                        cellContent = `<span class="text-white font-bold" title="Drehmoment geprüft (D)">D</span>`;
+                        cellBg = 'bg-amber-400';
+                    } else {
+                        cellBg = '';
+                    }
+
+                    rowHtml += `<td class="p-1 border-r h-10 align-middle ${cellBg}">${cellContent}</td>`;
+                }
+
+                rowHtml += `</tr>`;
+                tbody.innerHTML += rowHtml;
+            });
+        }
+
+        // CSV Export Function (Logs)
+        function exportLogsCSV() {
+            if (logs.length === 0) {
+                alert('Es sind keine Protokolle für den CSV-Export vorhanden.');
+                return;
+            }
+
+            let csvContent = "\uFEFFDatum;Mitarbeiter;Aktion;Uhrzeit\n";
+
+            logs.forEach(l => {
+                const row = [
+                    `"${l.date}"`,
+                    `"${l.name}"`,
+                    `"${l.action}"`,
+                    `"${l.time}"`
+                ].join(";");
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            const currentDateStr = new Date().toISOString().split('T')[0];
+            link.setAttribute("href", url);
+            link.setAttribute("download", `pruefprotokoll_${currentDateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // CSV Export Function (Calendar Matrix View)
+        function exportCalendarCSV() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const monthNames = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            if (employees.length === 0) {
+                alert('Keine Mitarbeiter für den Export vorhanden.');
+                return;
+            }
+
+            let headerRow = ["Mitarbeiter"];
+            for (let d = 1; d <= daysInMonth; d++) {
+                headerRow.push(`Tag ${d}`);
+            }
+            let csvContent = "\uFEFF" + headerRow.join(";") + "\n";
+
+            employees.forEach(emp => {
+                let rowData = [`"${emp}"`];
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dayStr = String(d).padStart(2, '0');
+                    const monthStr = String(month + 1).padStart(2, '0');
+                    const dateString = `${year}-${monthStr}-${dayStr}`;
+
+                    const isHoliday = holidays.some(h => h.employee === emp && dateString >= h.start && dateString <= h.end);
+                    const dayLogs = logs.filter(l => l.name === emp && l.date === dateString);
+
+                    let hasEsd = false;
+                    let hasDrehmoment = false;
+                    dayLogs.forEach(l => {
+                        if (l.action.includes('ESD')) hasEsd = true;
+                        if (l.action.includes('Drehmoment')) hasDrehmoment = true;
+                    });
+
+                    let status = "";
+                    if (isHoliday) status = "Urlaub";
+                    else if (hasEsd && hasDrehmoment) status = "E+D";
+                    else if (hasEsd) status = "E";
+                    else if (hasDrehmoment) status = "D";
+
+                    rowData.push(`"${status}"`);
+                }
+                csvContent += rowData.join(";") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `kalender_uebersicht_${monthNames[month]}_${year}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initial Page Setup
+        updateEmployeeSelect();
+    </script>
+</body>
+</html>
